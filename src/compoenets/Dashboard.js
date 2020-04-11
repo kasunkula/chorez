@@ -17,11 +17,11 @@ function Dashboard({history}) {
 
     return (
         <div>  
-            <Grid style={{ maxWidth: 450, height: '100vh'}} textAlign='center' verticalAlign='middle'>
+            <Grid style={{ maxWidth: 450, height: '100vh'}} textAlign="center" verticalAlign='top'>
                 <Grid.Row>
                     <Nav history={history} username={currentUser.displayName}  profilePicURL={currentUser.photoURL}/>     
                 </Grid.Row>
-            <Grid.Row>
+            <Grid.Row verticalAlign='top'>
                 <Tab panes={panes} />
             </Grid.Row>
             </Grid>                              

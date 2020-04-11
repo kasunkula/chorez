@@ -15,7 +15,8 @@
   box-sizing: border-box;
   width: 100%;
   display: flex;
-  justify-content: center;
+  flex-direction:column;
+  justify-content: flex-start;
   padding: 1em;
   margin-bottom: 0em;
   margin-right: 0em;
