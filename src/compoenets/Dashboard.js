@@ -4,15 +4,37 @@ import TodoList from './TodoList';
 import Nav from './Nav'
 import {  Grid } from 'semantic-ui-react'
 import { Tab } from 'semantic-ui-react'
+import { database } from './../FirebaseApp';
 
 function Dashboard({history}) {    
     const {currentUser} = useContext(AuthContext)
     console.log(currentUser)
 
+    database.ref('users').once('value').then(snapshot => {
+        const userObjects = snapshot.val()
+        console.log(userObjects)
+       // Object.keys(userObjects).forEach((userId) => {
+        snapshot.forEach((user) => {
+            console.log(user.key)
+            console.log(user.val().email)
+            if (user.val().email === currentUser.email) {
+                if (user.val().avatar_url === currentUser.photoURL || user.val().display_name !== currentUser.displayName) {
+                    database.ref('users/' + user.key).update(
+                        {                            
+                            avatar_url: currentUser.photoURL,
+                            display_name: currentUser.displayName
+                        }
+                    )
+                    
+                }
+            }
+        })
+
+      });
+
     const panes = [
-        { menuItem: 'My Chores', render: () => <TodoList /> },
-        { menuItem: 'All Chores', render: () => <TodoList /> },
-        { menuItem: 'Calender', render: () => <TodoList /> },
+        { menuItem: 'My Chores', render: () => <TodoList user={currentUser} /> },
+        { menuItem: 'All Chores', render: () => <TodoList usere=""/> }
       ]
 
     return (
