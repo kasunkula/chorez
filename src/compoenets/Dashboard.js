@@ -50,9 +50,14 @@ export default class Dashboard extends React.Component {
                 }
                 allAssignements.push(assignment.val())
             })
+
             this.setState(() => ({
-                currentUserChores: userAssignments,
-                allChores: allAssignements
+                currentUserChores: userAssignments.sort((a, b) => {
+                    return a.date > b.date ? 1 : -1;
+                }),
+                allChores: allAssignements.sort((a, b) => {
+                    return a.date > b.date ? 1 : -1;
+                })
             }))
         })
     } 
