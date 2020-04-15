@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button, Card, Image } from 'semantic-ui-react'
 
-function TodoListItem({title, subtitle, description}) {    
+function TodoListItem({title, subtitle, description, dpUrl}) {    
     const handleDone = () => {
         console.log("Task Completed!")
     }
@@ -17,7 +17,7 @@ function TodoListItem({title, subtitle, description}) {
             <Image
                 floated='right'
                 size='mini'
-                src='https://react.semantic-ui.com/images/avatar/large/steve.jpg'
+                src={dpUrl}
             />
             <Card.Header textAlign='left'>{title}</Card.Header>
             <Card.Meta textAlign='left'>{subtitle}</Card.Meta>
