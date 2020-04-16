@@ -15,6 +15,8 @@ export default class Dashboard extends React.Component {
             currentUser: props.loggedInUser                   
         };
 
+        this.handleActionOnChore = this.handleActionOnChore.bind(this);
+
         database.ref('users').once('value', snapshot => {
             var users = [] 
             snapshot.forEach((user) => {
@@ -42,19 +44,17 @@ export default class Dashboard extends React.Component {
           });
 
           database.ref('/assignments').once('value', (snapshot) => {     
-            var userAssignments = [] 
             var allAssignements = []
-            snapshot.forEach((assignment) => {                       
-                if (assignment.val().assigned_user === this.state.currentUser.email) {
-                    userAssignments.push(assignment.val())                    
+            snapshot.forEach((assignment) => {      
+                var assignedChore = {}   
+                assignedChore = {
+                    uid: assignment.key,
+                    ...assignment.val()
                 }
-                allAssignements.push(assignment.val())
+                allAssignements.push(assignedChore)
             })
 
             this.setState(() => ({
-                currentUserChores: userAssignments.sort((a, b) => {
-                    return a.date > b.date ? 1 : -1;
-                }),
                 allChores: allAssignements.sort((a, b) => {
                     return a.date > b.date ? 1 : -1;
                 })
@@ -62,10 +62,36 @@ export default class Dashboard extends React.Component {
         })
     } 
 
+    handleActionOnChore(uid, status) {
+        var allAssignements = [...this.state.allChores]
+        allAssignements.forEach((assignment) => {
+            if (assignment.uid === uid) {
+                assignment.status = status
+                database.ref('assignments/' + assignment.uid).update(
+                    {                            
+                        status: status
+                    }
+                )
+                console.log("task " + uid + " updated")
+            }
+        })
+        this.setState(() => ({
+            allChores: allAssignements
+        }))
+    }
+
     render () {
         const panes = [
-            { menuItem: 'My Chores', render: () => <TodoList allUsers={this.state.allUsers} chores={this.state.currentUserChores} /> },
-            { menuItem: 'All Chores', render: () => <TodoList allUsers={this.state.allUsers} chores={this.state.allChores} /> }
+            { menuItem: 'My Chores', render: () => 
+                <TodoList 
+                displayOnly={true} 
+                handleActionOnChore={this.handleActionOnChore} 
+                allUsers={this.state.allUsers} 
+                chores={this.state.allChores.filter((assignment) => {
+                    return assignment.assigned_user === this.state.currentUser.email
+                })} 
+                /> },
+            { menuItem: 'All Chores', render: () => <TodoList displayOnly={false} allUsers={this.state.allUsers} chores={this.state.allChores} /> }
           ]
 
           return (

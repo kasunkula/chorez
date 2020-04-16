@@ -2,7 +2,7 @@ import React from 'react'
 import { Card, Grid, Header } from 'semantic-ui-react'
 import TodoListItem from './TodoListItem'
 
-export default class TodoList extends React.Component {      
+export default class TodoList extends React.Component {
     render () {
         return (
             <div className="Tab">
@@ -16,10 +16,15 @@ export default class TodoList extends React.Component {
                                     ) : (
                                         this.props.chores.map((assignment) => {                                    
                                             return <TodoListItem 
+                                            key={assignment.uid}
+                                            uid={assignment.uid} 
                                             title={assignment.task_name} 
                                             subtitle={assignment.date} 
                                             description={assignment.task_description}
-                                            dpUrl={this.props.allUsers[assignment.assigned_user].avatar_url}/>;
+                                            dpUrl={this.props.allUsers[assignment.assigned_user].avatar_url}
+                                            status={assignment.status}
+                                            handleActionOnChore={this.props.handleActionOnChore}
+                                            displayOnly={this.props.displayOnly}/>;
                                         })
                                     )
                                 }
