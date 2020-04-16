@@ -72,7 +72,7 @@ export default class Dashboard extends React.Component {
                         status: status
                     }
                 )
-                console.log("task " + uid + " updated")
+                console.log("task " + uid + " status updated to " + status)
             }
         })
         this.setState(() => ({
