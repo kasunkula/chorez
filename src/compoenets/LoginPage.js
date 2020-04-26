@@ -19,8 +19,8 @@ function LoginPage( {history} ) {
     )
 
     const {currentUser} = useContext(AuthContext)
-
-    if (currentUser) {
+    console.log("Checking Current user at login page : " + currentUser)
+    if (currentUser) {      
         return <Redirect to="/" />
     }
 

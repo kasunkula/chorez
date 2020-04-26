@@ -1,8 +1,7 @@
 import React from 'react'
 import TodoList from './TodoList';
 import Nav from './Nav'
-import {  Grid } from 'semantic-ui-react'
-import { Tab } from 'semantic-ui-react'
+import {  Grid, Loader, Tab } from 'semantic-ui-react'
 import { database } from './../FirebaseApp';
 
 export default class Dashboard extends React.Component {    
@@ -10,7 +9,8 @@ export default class Dashboard extends React.Component {
         super(props);
         this.state = {
             allUsers: {},
-            currentUserChores: [],
+            usersLoaded: false,
+            choresLoaded: false,
             allChores: [],
             currentUser: props.loggedInUser                   
         };
@@ -38,9 +38,11 @@ export default class Dashboard extends React.Component {
                     }
                 }
             })            
-            this.setState(() => ({
-                allUsers: users
+            this.setState((privState) => ({
+                allUsers: users,
+                usersLoaded: true
             }))
+            console.log("DB Loading Status : " + this.state.dbLoadingComplete)
           });
 
           database.ref('/assignments').once('value', (snapshot) => {     
@@ -54,11 +56,13 @@ export default class Dashboard extends React.Component {
                 allAssignements.push(assignedChore)
             })
 
-            this.setState(() => ({
+            this.setState((privState) => ({
                 allChores: allAssignements.sort((a, b) => {
                     return a.date > b.date ? 1 : -1;
-                })
+                }),
+                choresLoaded: true
             }))
+            console.log("DB Loading Status : " + this.state.dbLoadingComplete)
         })
     } 
 
@@ -81,7 +85,7 @@ export default class Dashboard extends React.Component {
     }
 
     render () {
-        const panes = [
+        const tabPanes = [
             { menuItem: 'My Chores', render: () => 
                 <TodoList 
                 displayOnly={true} 
@@ -89,20 +93,27 @@ export default class Dashboard extends React.Component {
                 allUsers={this.state.allUsers} 
                 chores={this.state.allChores.filter((assignment) => {
                     return assignment.assigned_user === this.state.currentUser.email
-                })} 
-                /> },
-            { menuItem: 'All Chores', render: () => <TodoList displayOnly={false} allUsers={this.state.allUsers} chores={this.state.allChores} /> }
+                })}
+                /> }
           ]
 
           return (
             <div>  
-                <Grid style={{ maxWidth: 450, height: '100vh'}} textAlign="center" verticalAlign='top'>
-                    <Grid.Row>
+                <Grid style={{ maxWidth: 450, height: '100vh'}} textAlign="left" verticalAlign='top' columns={1}>
+                    <Grid.Row >
+                    <div className='NavOuterDiv'>
                         <Nav history={this.props.history} username={this.state.currentUser.displayName}  profilePicURL={this.state.currentUser.photoURL}/>     
+                    </div>                    
                     </Grid.Row>
-                <Grid.Row verticalAlign='top'>
-                    <Tab panes={panes} />
-                </Grid.Row>
+                    {
+                        !this.state.usersLoaded || !this.state.choresLoaded ? (
+                            <Loader active inline='centered' />
+                        ) : (
+                            <Grid.Row verticalAlign='top'>
+                                <Tab panes={tabPanes} />
+                            </Grid.Row>
+                        )
+                    }                   
                 </Grid>                              
             </div>
         )
