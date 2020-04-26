@@ -40,6 +40,10 @@
     justify-content: space-between;
 }
 
+.todoListCompletedAccorianTime {
+  text-align: left;
+}
+
 .todoListCompletedItem {
     box-sizing: border-box;
     width: 100%;

@@ -42,30 +42,6 @@ export default class TodoListItem extends React.Component {
         return ""
     }
 
-    renderCompletedGridItem (date, status, dp_url) {
-        let statusIcon;
-        if (status === 'Completed') {
-            statusIcon = <Icon name='thumbs up' color='green' size='big' />
-        } else {
-            statusIcon = <Icon name='thumbs down' color='red' size='big' />
-        }
-
-        const dpProps = {
-            avatar: true,
-            spaced: 'styled',
-            src: dp_url
-        }
-
-        return (
-            <div class="todoListCompletedItem">
-                <Label className="todoListCompletedItemLabel" size="Big" content={moment(date).format('dddd MMMM Do')} image={dpProps}/>
-                <div class="todoListCompletedItemStatusDiv">
-                    {statusIcon}
-                </div>                        
-            </div>
-        )
-    }
-
     renderCompletedTableItem (date, status, dp_url) {
         let statusIcon;
         if (status === 'Completed') {
@@ -73,13 +49,6 @@ export default class TodoListItem extends React.Component {
         } else {
             statusIcon = <Icon name='thumbs down' color='red' size='small' />
         }
-
-        const dpProps = {
-            avatar: true,
-            spaced: 'styled',
-            src: dp_url
-        }
-
         return (
             <Table.Row>
                 <Table.Cell>
@@ -98,15 +67,6 @@ export default class TodoListItem extends React.Component {
     
     renderExtraContent () {
         const { activeIndex } = this.state        
-
-        const completedGrid = (
-            <Menu fluid vertical>
-                <Menu.Item>{this.renderCompletedGridItem('2020/04/17', "Completed", "https://lh3.googleusercontent.com/a-/AOh14Gi3V3sFkItNTZOqWPmKMA9iUXcy0Tr58pJ6mzeI")}</Menu.Item>
-                <Menu.Item>{this.renderCompletedGridItem('2020/04/19', "Rejected", "https://lh6.googleusercontent.com/-O8n2HNKFA2o/AAAAAAAAAAI/AAAAAAAAAAA/AAKWJJNwq4puV0B8NI5MMoVllJTamIVBzQ/photo.jpg")}</Menu.Item>
-                <Menu.Item>{this.renderCompletedGridItem('2020/04/20', "Completed", "https://lh3.googleusercontent.com/a-/AOh14Ggf_EHLCjX2GLJTQHzButzPpm-3EwA_RYZvsFdkJA")}</Menu.Item>
-            </Menu>
-        )
-
         const completedTable = (
             <Table basic='very' celled collapsing>                
                 <Table.Body>
@@ -116,25 +76,12 @@ export default class TodoListItem extends React.Component {
                 </Table.Body>
             </Table>
         )
-
-        const scheduledGrid = (
-            <Menu fluid vertical>
-                <Menu.Item>2020/04/17</Menu.Item>
-                <Menu.Item>2020/04/20</Menu.Item>
-            </Menu>
+        return (
+            <Accordion styled>
+                <Accordion.Title className="todoListCompletedAccorianTime" content='Already Completed' index={0} onClick={this.handleClick}/>
+                <Accordion.Content active={activeIndex === 0} content={completedTable} />            
+            </Accordion>
         )
-
-        const Level1Content = (
-            <div>                
-                <Accordion vertical fluid styled>
-                    <Accordion.Title content='Completed' index={0} onClick={this.handleClick}/>
-                    <Accordion.Content active={activeIndex === 0} content={completedTable} />
-                    <Accordion.Title content='Scheduled' index={1} onClick={this.handleClick}/>
-                    <Accordion.Content active={activeIndex === 1} content={completedGrid} />                
-                </Accordion>
-            </div>
-        )
-        return Level1Content
 
     }
 
