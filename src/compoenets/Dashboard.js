@@ -1,8 +1,8 @@
 import React from 'react'
 import TodoList from './TodoList';
 import Nav from './Nav'
-import {  Grid, Loader, Tab } from 'semantic-ui-react'
-import { firebaseApp, database } from './../FirebaseApp';
+import { Grid, Loader, Tab } from 'semantic-ui-react'
+import { database } from './../FirebaseApp';
 
 export default class Dashboard extends React.Component {    
     constructor(props) {
@@ -89,12 +89,22 @@ export default class Dashboard extends React.Component {
 
     askForPushNotificationPermissions = async () => {
         try {
-            const messaging = firebaseApp.messaging();
-            await messaging.requestPermission();
-            const token = await messaging.getToken();
-            console.log(token);
-            localStorage.setItem("notification-token", token)
-            return token
+            Notification.requestPermission((status) => {
+                console.log('Notification permission status:', status);
+            });
+            console.log('Notification permission status:', Notification.permission);
+            console.log('Registered service worker:', navigator.serviceWorker);
+            if (Notification.permission === 'granted') {
+                    navigator.serviceWorker.getRegistration().then((reg) => {
+                    reg.showNotification('Hello world!');
+                });
+            }
+            // const messaging = firebaseApp.messaging();
+            // await messaging.requestPermission();
+            // const token = await messaging.getToken();
+            // console.log(token);
+            // localStorage.setItem("notification-token", token)
+            // return token
         } catch (error) {
             console.error(error)
         }
