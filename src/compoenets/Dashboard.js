@@ -2,16 +2,20 @@ import React from 'react'
 import TodoList from './TodoList';
 import Nav from './Nav'
 import {  Grid, Loader, Tab } from 'semantic-ui-react'
-import { database } from './../FirebaseApp';
+import { firebaseApp, database } from './../FirebaseApp';
 
 export default class Dashboard extends React.Component {    
     constructor(props) {
         super(props);
         this.state = {
-            allUsers: {},
             usersLoaded: false,
-            choresLoaded: false,
-            allChores: [],
+            TasksLoaded: false,
+            assignementsLoaded: false,
+            preProcessingComplete: false,
+            allUsers: {},            
+            allAssignments: [],
+            allTasks: {},
+            perTaskAssignments: {},
             currentUser: props.loggedInUser                   
         };
 
@@ -42,10 +46,10 @@ export default class Dashboard extends React.Component {
                 allUsers: users,
                 usersLoaded: true
             }))
-            console.log("DB Loading Status : " + this.state.dbLoadingComplete)
-          });
+            this.buildPerTaskAssignements()
+        });
 
-          database.ref('/assignments').once('value', (snapshot) => {     
+        database.ref('/assignments').once('value', (snapshot) => {     
             var allAssignements = []
             snapshot.forEach((assignment) => {      
                 var assignedChore = {}   
@@ -57,18 +61,60 @@ export default class Dashboard extends React.Component {
             })
 
             this.setState((privState) => ({
-                allChores: allAssignements.sort((a, b) => {
+                allAssignments: allAssignements.sort((a, b) => {
                     return a.date > b.date ? 1 : -1;
                 }),
-                choresLoaded: true
+                assignementsLoaded: true
             }))
-            console.log("DB Loading Status : " + this.state.dbLoadingComplete)
+            this.buildPerTaskAssignements()
+        })
+
+        database.ref('/chores').once('value', (snapshot) => {     
+            var Tasks = []
+            snapshot.forEach((task) => {      
+                var assignedWithID = {}   
+                assignedWithID = {
+                    uid: task.key,
+                    ...task.val()
+                }
+                Tasks.push(assignedWithID)
+            })
+            this.setState((privState) => ({
+                allTasks: Tasks,
+                TasksLoaded: true
+            }))
+            this.buildPerTaskAssignements()
         })
     } 
 
+    askForPushNotificationPermissions = async () => {
+        try {
+            const messaging = firebaseApp.messaging();
+            await messaging.requestPermission();
+            const token = await messaging.getToken();
+            console.log(token);
+            localStorage.setItem("notification-token", token)
+            return token
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
+    buildPerTaskAssignements() {
+        if (!this.state.usersLoaded || !this.state.TasksLoaded || !this.state.assignementsLoaded) {
+            return
+        }
+        this.setState((privState) => ({
+            preProcessingComplete: true
+        }))
+        if (!localStorage.getItem("notification-token")){
+            this.askForPushNotificationPermissions();
+        }
+    }
+
     handleActionOnChore(uid, status) {
-        var allAssignements = [...this.state.allChores]
-        allAssignements.forEach((assignment) => {
+        var tmpAllAssignements = [...this.state.allAssignments]
+        tmpAllAssignements.forEach((assignment) => {
             if (assignment.uid === uid) {
                 assignment.status = status
                 database.ref('assignments/' + assignment.uid).update(
@@ -76,22 +122,23 @@ export default class Dashboard extends React.Component {
                         status: status
                     }
                 )
-                console.log("task " + uid + " status updated to " + status)
+                console.log("assignement " + uid + " status updated to " + status)
             }
         })
         this.setState(() => ({
-            allChores: allAssignements
+            allAssignments: tmpAllAssignements
         }))
     }
 
     render () {
         const tabPanes = [
-            { menuItem: 'My Chores', render: () => 
+            { menuItem: 'My Tasks', render: () => 
                 <TodoList 
                 displayOnly={true} 
                 handleActionOnChore={this.handleActionOnChore} 
                 allUsers={this.state.allUsers} 
-                chores={this.state.allChores.filter((assignment) => {
+                allTasks={this.state.allTasks}
+                chores={this.state.allAssignments.filter((assignment) => {
                     return assignment.assigned_user === this.state.currentUser.email
                 })}
                 /> }
@@ -106,7 +153,7 @@ export default class Dashboard extends React.Component {
                     </div>                    
                     </Grid.Row>
                     {
-                        !this.state.usersLoaded || !this.state.choresLoaded ? (
+                        !this.state.preProcessingComplete ? (
                             <Loader active inline='centered' />
                         ) : (
                             <Grid.Row verticalAlign='top'>

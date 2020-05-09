@@ -21,6 +21,7 @@ const isLocalhost = Boolean(
 );
 
 export function register(config) {
+  console.log('Registering service worker = ', process.env.NODE_ENV);
   if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
     // The URL constructor is available in all browsers that support SW.
     const publicUrl = new URL(process.env.PUBLIC_URL, window.location.href);
@@ -58,6 +59,7 @@ function registerValidSW(swUrl, config) {
   navigator.serviceWorker
     .register(swUrl)
     .then(registration => {
+      console.log('Service worker registration successful, scope is:', registration.scope);
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
         if (installingWorker == null) {

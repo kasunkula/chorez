@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Card, Image, Accordion, Menu, Divider, Icon, Label, Table, Header } from 'semantic-ui-react'
+import { Button, Card, Image, Accordion, Divider, Icon, Table, Header } from 'semantic-ui-react'
 import moment from 'moment';
 import './../styles/Components.css';
 
@@ -59,6 +59,8 @@ export default class TodoListItem extends React.Component {
                             <Header.Subheader>None</Header.Subheader>
                         </Header.Content>                        
                     </Header>
+                </Table.Cell>
+                <Table.Cell>
                     {statusIcon}
                 </Table.Cell>
             </Table.Row>
@@ -68,7 +70,7 @@ export default class TodoListItem extends React.Component {
     renderExtraContent () {
         const { activeIndex } = this.state        
         const completedTable = (
-            <Table basic='very' celled collapsing>                
+            <Table basic='very' celled collapsing singleLine='True' textAlign='left' verticalAlign='middle'>                
                 <Table.Body>
                     {this.renderCompletedTableItem('2020/04/16', "Completed", "https://lh3.googleusercontent.com/a-/AOh14Gi3V3sFkItNTZOqWPmKMA9iUXcy0Tr58pJ6mzeI")}
                     {this.renderCompletedTableItem('2020/04/19', "Rejected", "https://lh6.googleusercontent.com/-O8n2HNKFA2o/AAAAAAAAAAI/AAAAAAAAAAA/AAKWJJNwq4puV0B8NI5MMoVllJTamIVBzQ/photo.jpg")}
@@ -78,8 +80,8 @@ export default class TodoListItem extends React.Component {
         )
         return (
             <Accordion styled>
-                <Accordion.Title className="todoListCompletedAccorianTime" content='Already Completed' index={0} onClick={this.handleClick}/>
-                <Accordion.Content active={activeIndex === 0} content={completedTable} />            
+                <Accordion.Title className="todoListCompletedAccorianTitle" content='Already Completed' index={0} onClick={this.handleClick}/>
+                <Accordion.Content className='todoListCompletedAccorianTable' active={activeIndex === 0} content={completedTable} />            
             </Accordion>
         )
 
