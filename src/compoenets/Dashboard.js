@@ -89,9 +89,12 @@ export default class Dashboard extends React.Component {
 
     askForPushNotificationPermissions = async () => {
         try {
-            Notification.requestPermission((status) => {
-                console.log('Notification permission status:', status);
-            });
+            if (Notification.permission === 'granted') {
+                Notification.requestPermission((status) => {
+                    console.log('Notification permission status:', status);
+                });
+            }
+            
             console.log('Notification permission status:', Notification.permission);
             console.log('Registered service worker:', navigator.serviceWorker);
             if (Notification.permission === 'granted') {
