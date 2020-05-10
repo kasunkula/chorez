@@ -87,6 +87,25 @@ export default class Dashboard extends React.Component {
         })
     } 
 
+    subscribeUser = () => {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.ready.then(function(reg) {
+      
+            reg.pushManager.subscribe({
+              userVisibleOnly: true
+            }).then(function(sub) {
+              console.log('Endpoint URL: ', sub.endpoint);
+            }).catch(function(e) {
+              if (Notification.permission === 'denied') {
+                console.warn('Permission for notifications was denied');
+              } else {
+                console.error('Unable to subscribe to push', e);
+              }
+            });
+          })
+        }
+      }
+    
     askForPushNotificationPermissions = async () => {
         try {
             if (Notification.permission === 'granted') {
@@ -120,9 +139,10 @@ export default class Dashboard extends React.Component {
         this.setState((privState) => ({
             preProcessingComplete: true
         }))
-        if (!localStorage.getItem("notification-token")){
-            this.askForPushNotificationPermissions();
-        }
+        // if (!localStorage.getItem("notification-token")){
+        //     this.askForPushNotificationPermissions();
+        // }
+        this.subscribeUser();
     }
 
     handleActionOnChore(uid, status) {
