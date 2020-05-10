@@ -81,38 +81,7 @@ function registerValidSW(swUrl, config) {
     .register(swUrl)
     .then(registration => {
       console.log('Service worker registration successful, scope is:', registration.scope);
-      registration.pushManager.getSubscription().then(function(sub) {
-        if (sub === null) {
-          // Update UI to ask user to register for Push
-          console.log('Not subscribed to push service!');
-          if ('serviceWorker' in navigator) {
-            console.log('Service worker proceeding with subscription for push manager ', registration.pushManager);
-            navigator.serviceWorker.ready.then(function(reg) {        
-              reg.pushManager.subscribe({
-                userVisibleOnly: true
-              }).then(function(sub) {
-                console.log('Endpoint URL: ', sub.endpoint);                
-              }).catch(function(e) {
-                if (Notification.permission === 'denied') {
-                  console.warn('Permission for notifications was denied');
-                } else {
-                  console.error('Unable to subscribe to push', e);
-                }
-              });
-            }).catch(function(e) {
-              console.log('navigator.serviceWorker ready failed', navigator.serviceWorker);
-            });
-          } else {
-            console.log('serviceWorker not in navigator!');
-          }        
-        } else {
-          // We have a subscription, update the database
-          console.log('Subscription object: ', sub);
-        }
-      }).catch(function(e) {
-        console.log('registration.pushManager.getSubscription failed for push manager', registration.pushManager);
-      });
-
+      
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
         if (installingWorker == null) {
