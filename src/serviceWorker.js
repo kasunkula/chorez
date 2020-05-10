@@ -81,6 +81,7 @@ function registerValidSW(swUrl, config) {
     .register(swUrl)
     .then(registration => {
       console.log('Service worker registration successful, scope is:', registration.scope);
+      console.log('Service worker proceeding with subscription for push manager:', registration.pushManager);
       registration.pushManager.getSubscription().then(function(sub) {
         if (sub === null) {
           // Update UI to ask user to register for Push
@@ -98,12 +99,16 @@ function registerValidSW(swUrl, config) {
                   console.error('Unable to subscribe to push', e);
                 }
               });
-            })
+            }).catch(function(e) {
+              console.log('navigator.serviceWorker ready failed', navigator.serviceWorker);
+            });
           }
         } else {
           // We have a subscription, update the database
           console.log('Subscription object: ', sub);
         }
+      }).catch(function(e) {
+        console.log('registration.pushManager.getSubscription failed for push manager', registration.pushManager);
       });
 
       registration.onupdatefound = () => {
