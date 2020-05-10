@@ -164,7 +164,7 @@ export default class Dashboard extends React.Component {
         // if (!localStorage.getItem("notification-token")){
         //     this.askForPushNotificationPermissions();
         // }
-        this.subscribeToPushManager();
+        this.subscribeUser();
     }
 
     handleActionOnChore(uid, status) {
