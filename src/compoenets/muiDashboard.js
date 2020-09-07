@@ -1,9 +1,14 @@
 import React from 'react'
-import TodoList from './TodoList';
-import Nav from './Nav'
-import {Grid, Loader, Tab} from 'semantic-ui-react'
-import {database} from './../FirebaseApp';
 
+import Grid from '@material-ui/core/Grid';
+import CircularProgress from "@material-ui/core/CircularProgress";
+import Container from '@material-ui/core/Container';
+import {ThemeProvider, createMuiTheme} from '@material-ui/core/styles';
+
+import AppBar from "./AppBar";
+import TaskList from "./muiTaskList";
+
+import {database} from './../FirebaseApp';
 
 export default class Dashboard extends React.Component {
     constructor(props) {
@@ -16,7 +21,6 @@ export default class Dashboard extends React.Component {
             allUsers: {},
             allAssignments: [],
             allTasks: {},
-            perTaskAssignments: {},
             currentUser: props.loggedInUser
         };
         this.handleActionOnChore = this.handleActionOnChore.bind(this);
@@ -25,18 +29,18 @@ export default class Dashboard extends React.Component {
     componentDidMount() {
         // load user information
         database.ref('users').once('value', snapshot => {
-            let users = []
+            let users = {}
             snapshot.forEach((user) => {
                 const userEmail = user.val().email
                 users = {
                     ...users,
-                    [userEmail]: {
-                        "display_name": [user.val().display_name],
-                        "avatar_url": [user.val().avatar_url]
+                    [user.key]: {
+                       ...user.val()
                     }
                 }
                 if (userEmail === this.state.currentUser.email) {
-                    if (user.val().avatar_url === this.state.currentUser.photoURL || user.val().display_name !== this.state.currentUser.displayName) {
+                    if (user.val().avatar_url === this.state.currentUser.photoURL ||
+                        user.val().display_name !== this.state.currentUser.displayName) {
                         database.ref('users/' + user.key).update(
                             {
                                 avatar_url: this.state.currentUser.photoURL,
@@ -52,48 +56,51 @@ export default class Dashboard extends React.Component {
                 usersLoaded: true
             }))
             console.log("User Load up Complete")
-            this.onPostDataLoadup()
+            this.onDataLoadingComplete()
         });
 
         // load assignments
         database.ref('/assignments').once('value', (snapshot) => {
-            var allAssignments = []
+            let tmpAllAssignments = []
             snapshot.forEach((assignment) => {
-                var assignedChore = {}
-                assignedChore = {
+                var tmpAssignment = {}
+                tmpAssignment = {
                     uid: assignment.key,
                     ...assignment.val()
                 }
-                allAssignments.push(assignedChore)
+                tmpAllAssignments.push(tmpAssignment)
             })
 
             this.setState((privState) => ({
-                allAssignments: allAssignments.sort((a, b) => {
+                allAssignments: tmpAllAssignments.sort((a, b) => {
                     return a.date > b.date ? 1 : -1;
                 }),
                 assignmentsLoaded: true
             }))
             console.log("Assignments Load up Complete")
-            this.onPostDataLoadup()
+            this.onDataLoadingComplete()
         })
 
         // load tasks
         database.ref('/chores').once('value', (snapshot) => {
-            var Tasks = []
+            let tmpAllTasks = {}
             snapshot.forEach((task) => {
-                var assignedWithID = {}
-                assignedWithID = {
-                    uid: task.key,
-                    ...task.val()
+                tmpAllTasks = {
+                    ...tmpAllTasks,
+                    [task.key]: {
+                        uid: task.key,
+                        pendingAssignments: [],
+                        pastAssignments: [],
+                        ...task.val()
+                    }
                 }
-                Tasks.push(assignedWithID)
             })
-            this.setState((privState) => ({
-                allTasks: Tasks,
+            this.setState(() => ({
+                allTasks: tmpAllTasks,
                 TasksLoaded: true
             }))
             console.log("Tasks Load up Complete")
-            this.onPostDataLoadup()
+            this.onDataLoadingComplete()
         })
     }
 
@@ -142,17 +149,27 @@ export default class Dashboard extends React.Component {
         }
     }
 
-    onPostDataLoadup() {
+    onDataLoadingComplete() {
         if (!this.state.usersLoaded || !this.state.TasksLoaded || !this.state.assignmentsLoaded) {
             return
         }
-        console.log("All info loaded")
+
+        let tmpTasks = {
+            ...this.state.allTasks
+        }
+
+        this.state.allAssignments.forEach((assignment) => {
+            if (assignment.status != "Pending" || assignment.date < "2020/09/07" ) {
+                tmpTasks[assignment.task_uid].pastAssignments.push(assignment)
+            } else {
+                tmpTasks[assignment.task_uid].pendingAssignments.push(assignment)
+            }
+        })
+
         this.setState(() => ({
-            preProcessingComplete: true
+            preProcessingComplete: true,
+            allTasks: tmpTasks
         }))
-
-
-
         // if (!localStorage.getItem("notification-token")){
         //     this.askForPushNotificationPermissions();
         // }
@@ -175,42 +192,40 @@ export default class Dashboard extends React.Component {
         this.setState(() => ({
             allAssignments: tmpAllAssignements
         }))
+        this.onDataLoadingComplete()
     }
 
     render() {
-        const tabPanes = [
-            {
-                menuItem: 'Chores', render: () =>
-                    <TodoList
-                        displayOnly={true}
-                        handleActionOnChore={this.handleActionOnChore}
-                        users={this.state.allUsers}
-                        assignments={this.state.allAssignments}
-                        chores={this.state.allTasks}
-                    />
-            }
-        ]
-
         return (
-            <div>
-                <Grid style={{maxWidth: 450, height: '100vh'}} textAlign="left" verticalAlign='top' columns={1}>
-                    <Grid.Row>
-                        <div className='NavOuterDiv'>
-                            <Nav history={this.props.history} username={this.state.currentUser.displayName}
-                                 profilePicURL={this.state.currentUser.photoURL}/>
-                        </div>
-                    </Grid.Row>
-                    {
-                        !this.state.preProcessingComplete ? (
-                            <Loader size={"huge"} active inline='centered'/>
-                        ) : (
-                            <Grid.Row verticalAlign='top'>
-                                <Tab panes={tabPanes}/>
-                            </Grid.Row>
-                        )
-                    }
+            <Container maxWidth="sm" direction="column" justify="center" alignItems="stretch" style={{height: "100vh"}}>
+                <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                        <AppBar history={this.props.history} username={this.state.currentUser.displayName}
+                                profilePicURL={this.state.currentUser.photoURL}/>
+                    </Grid>
                 </Grid>
-            </div>
+                {
+                    !this.state.preProcessingComplete ? (
+                        <Container style={{
+                            height: "100vh", display: "flex",
+                            justifyContent: "center", alignItems: "center"
+                        }}>
+                            <CircularProgress/>
+                        </Container>
+                    ) : (
+                        <Grid container>
+                            <Grid item xs={12}>
+                                <TaskList
+                                    handleActionOnChore={this.handleActionOnChore}
+                                    users={this.state.allUsers}
+                                    assignments={this.state.allAssignments}
+                                    tasks={this.state.allTasks}
+                                />
+                            </Grid>
+                        </Grid>
+                    )
+                }
+            </Container>
         )
     }
 

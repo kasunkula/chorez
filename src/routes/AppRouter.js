@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import LoginPage from './../compoenets/LoginPage'
-import Dashboard from './../compoenets/Dashboard'
+import Dashboard from './../compoenets/muiDashboard'
 import { AuthProvider } from './../Auth'
 import PrivateRoute from './PrivateRoute'
 import { firebaseConfig } from './../FirebaseApp';

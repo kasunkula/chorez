@@ -8,13 +8,24 @@ function Nav({history, username, profilePicURL}) {
     
     return (
         <div className="Nav">
-            <Image src={profilePicURL} avatar />
-            <Icon name='home' size='large' />
-            <Icon name='sign-out' onClick={() => {
+            <div style={{
+                marginLeft: 10,
+                marginBottom: 10
+            }}>
+                <Image size={"mini"} src={profilePicURL} avatar />
+            </div>
+            <div>
+                <Icon name='home' size='large' />
+            </div>
+            <div style={{
+                marginRight: 5
+            }}>
+                <Icon name='sign-out' size='large' onClick={() => {
                     firebaseApp.auth().signOut();
                     history.push("/login")
                 }}>
-            </Icon>                   
+                </Icon>
+            </div>
         </div>
     )
 }
