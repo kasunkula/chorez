@@ -39,6 +39,13 @@ export default class Task extends React.Component {
         this.handleDone = this.handleDone.bind(this);
     }
 
+    componentWillReceiveProps(nextProps) {
+        this.setState({
+            nextAssigment: this.findNextPendingTask(nextProps.pendingTasks)
+        });
+        console.log(" === componentWillReceiveProps Task ===", this.state)
+    }
+
     cardStyles = makeStyles((theme) => ({
         root: {
             width: "100%"
@@ -154,7 +161,7 @@ export default class Task extends React.Component {
                     <CardContent>
                         <List className={this.listStyles.root}>
                             {
-                                this.props.pastTasks.sort((a, b) => a.date < b.date ? 1 : -1).slice(0, 5).map((assignment) => {
+                                this.props.pastTasks.sort((a, b) => a.date < b.date ? 1 : -1).slice(0, 10).map((assignment) => {
                                     return (
                                         <div>
                                             <ListItem alignItems="flex-start">

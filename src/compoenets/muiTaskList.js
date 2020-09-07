@@ -11,11 +11,23 @@ import Task from './muiTask'
 import Grid from "@material-ui/core/Grid";
 
 export default class TaskList extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            ...props
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        console.log(" === componentWillReceiveProps TaskList ===")
+        this.setState({ ...nextProps });
+    }
+
     render() {
         return (
             <div>
                 {
-                    Object.entries(this.props.tasks).map(([uid, task]) => {
+                    Object.entries(this.state.tasks).map(([uid, task]) => {
                         return (
                             <Grid container spacing={3}>
                                 <Grid item xs={12}>

@@ -3,12 +3,13 @@ import React from 'react'
 import Grid from '@material-ui/core/Grid';
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Container from '@material-ui/core/Container';
-import {ThemeProvider, createMuiTheme} from '@material-ui/core/styles';
 
 import AppBar from "./AppBar";
 import TaskList from "./muiTaskList";
 
 import {database} from './../FirebaseApp';
+import Toolbar from "@material-ui/core/Toolbar";
+import moment from "moment";
 
 export default class Dashboard extends React.Component {
     constructor(props) {
@@ -56,7 +57,7 @@ export default class Dashboard extends React.Component {
                 usersLoaded: true
             }))
             console.log("User Load up Complete")
-            this.onDataLoadingComplete()
+            this.OnStateUpdate()
         });
 
         // load assignments
@@ -78,7 +79,7 @@ export default class Dashboard extends React.Component {
                 assignmentsLoaded: true
             }))
             console.log("Assignments Load up Complete")
-            this.onDataLoadingComplete()
+            this.OnStateUpdate()
         })
 
         // load tasks
@@ -100,7 +101,7 @@ export default class Dashboard extends React.Component {
                 TasksLoaded: true
             }))
             console.log("Tasks Load up Complete")
-            this.onDataLoadingComplete()
+            this.OnStateUpdate()
         })
     }
 
@@ -149,7 +150,7 @@ export default class Dashboard extends React.Component {
         }
     }
 
-    onDataLoadingComplete() {
+    OnStateUpdate() {
         if (!this.state.usersLoaded || !this.state.TasksLoaded || !this.state.assignmentsLoaded) {
             return
         }
@@ -158,8 +159,13 @@ export default class Dashboard extends React.Component {
             ...this.state.allTasks
         }
 
+        Object.entries(tmpTasks).map(([uid, task]) => {
+                task.pastAssignments = []
+                task.pendingAssignments = []
+            }
+        )
         this.state.allAssignments.forEach((assignment) => {
-            if (assignment.status != "Pending" || assignment.date < "2020/09/07" ) {
+            if (assignment.status != "Pending" || assignment.date < moment().format('YYYY/MM/DD') ) {
                 tmpTasks[assignment.task_uid].pastAssignments.push(assignment)
             } else {
                 tmpTasks[assignment.task_uid].pendingAssignments.push(assignment)
@@ -170,6 +176,8 @@ export default class Dashboard extends React.Component {
             preProcessingComplete: true,
             allTasks: tmpTasks
         }))
+
+        console.log(" === OnStateUpdate Processing Complete ===")
         // if (!localStorage.getItem("notification-token")){
         //     this.askForPushNotificationPermissions();
         // }
@@ -177,8 +185,8 @@ export default class Dashboard extends React.Component {
     }
 
     handleActionOnChore(uid, status) {
-        let tmpAllAssignements = [...this.state.allAssignments]
-        tmpAllAssignements.forEach((assignment) => {
+        let tmplAllAssigment = [...this.state.allAssignments]
+        tmplAllAssigment.forEach((assignment) => {
             if (assignment.uid === uid) {
                 assignment.status = status
                 database.ref('assignments/' + assignment.uid).update(
@@ -186,13 +194,13 @@ export default class Dashboard extends React.Component {
                         status: status
                     }
                 )
-                console.log("assignement " + uid + " status updated to " + status)
+                console.log("assignment " + uid + " status updated to " + status)
             }
         })
         this.setState(() => ({
-            allAssignments: tmpAllAssignements
+            allAssignments: tmplAllAssigment
         }))
-        this.onDataLoadingComplete()
+        this.OnStateUpdate()
     }
 
     render() {
@@ -204,6 +212,7 @@ export default class Dashboard extends React.Component {
                                 profilePicURL={this.state.currentUser.photoURL}/>
                     </Grid>
                 </Grid>
+                <Toolbar style={{marginBottom: "10px"}}/>
                 {
                     !this.state.preProcessingComplete ? (
                         <Container style={{
