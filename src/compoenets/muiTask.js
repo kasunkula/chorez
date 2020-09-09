@@ -265,13 +265,15 @@ export default class Task extends React.Component {
                             style={{
                                 backgroundColor: "red !important",
                                 border: '2px solid #000',
-                                minHeight: '60%'
+                                minHeight: '60vh',
+                                maxWidth: '100vw'
                             }}>
                             <Calendar
                                 startAccessor="startDate"
                                 endAccessor="endDate"
                                 style={{
-                                    height: 500,
+                                    minHeight: 500,
+                                    maxWidth: '100vw'
                                 }}
                                 localizer={this.localizer}
                                 events={this.state.calendarEvents}
