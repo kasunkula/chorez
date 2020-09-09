@@ -24,9 +24,12 @@ import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import EmojiEmotionsOutlinedIcon from '@material-ui/icons/EmojiEmotionsOutlined';
 import SentimentVeryDissatisfiedOutlinedIcon from '@material-ui/icons/SentimentVeryDissatisfiedOutlined';
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
-import ThumbUpIcon from '@material-ui/icons/ThumbUp';
-import ThumbDownIcon from '@material-ui/icons/ThumbDown';
 import green from "@material-ui/core/colors/green";
+import {Calendar, momentLocalizer, Views} from 'react-big-calendar'
+import Modal from "@material-ui/core/Modal";
+import Backdrop from "@material-ui/core/Backdrop";
+import Fade from "@material-ui/core/Fade";
+import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 export default class Task extends React.Component {
     constructor(props) {
@@ -34,26 +37,24 @@ export default class Task extends React.Component {
         console.log("Task props :", this.props)
         this.state = {
             expanded: false,
-            nextAssigment: this.findNextPendingTask(this.props.pendingTasks)
+            modalOpen: false,
+            nextAssigment: this.findNextPendingTask(this.props.pendingTasks),
+            calendarEvents: this.createCalendarEventList(this.props.pendingTasks, this.props.pastTasks)
         }
         this.handleDone = this.handleDone.bind(this);
+        this.handleModalOpen = this.handleModalOpen.bind(this);
+        this.handleModalClose = this.handleModalClose.bind(this);
     }
 
     componentWillReceiveProps(nextProps) {
         this.setState({
-            nextAssigment: this.findNextPendingTask(nextProps.pendingTasks)
+            nextAssigment: this.findNextPendingTask(nextProps.pendingTasks),
+            calendarEvents: this.createCalendarEventList(this.props.pendingTasks, this.props.pastTasks)
         });
         console.log(" === componentWillReceiveProps Task ===", this.state)
     }
 
     cardStyles = makeStyles((theme) => ({
-        root: {
-            width: "100%"
-        },
-        media: {
-            height: 0,
-            paddingTop: "56.25%" // 16:9
-        },
         expand: {
             transform: "rotate(0deg)",
             marginLeft: "auto",
@@ -80,12 +81,25 @@ export default class Task extends React.Component {
         },
     }));
 
+    localizer = momentLocalizer(moment)
+
     handleExpandClick = () => {
         this.setState((prevState) => ({
             expanded: !prevState.expanded,
         }))
     };
 
+    handleModalOpen = () => {
+        this.setState((prevState) => ({
+            modalOpen: true,
+        }))
+    }
+
+    handleModalClose = () => {
+        this.setState((prevState) => ({
+            modalOpen: false,
+        }))
+    }
 
     handleDone = () => {
         console.log("Task Completed!")
@@ -105,6 +119,30 @@ export default class Task extends React.Component {
         return pendingTasks.sort((a, b) => a.date > b.date ? 1 : -1)[0]
     }
 
+    createCalendarEventList = (pastAssignments, pendingAssignments) => {
+        let calendarEvents = []
+        pastAssignments.map((assignment) => {
+            calendarEvents.push({
+                id: assignment.uid,
+                title: this.toTitleCase(this.getUser(assignment.assigned_user_uid).display_name),
+                allDay: true,
+                startDate: new Date(assignment.date),
+                endDate: new Date(assignment.date),
+            })
+        })
+        pendingAssignments.map((assignment) => {
+            calendarEvents.push({
+                id: assignment.uid,
+                title: this.toTitleCase(this.getUser(assignment.assigned_user_uid).display_name),
+                allDay: true,
+                startDate: new Date(assignment.date),
+                endDate: new Date(assignment.date),
+            })
+        })
+        console.log(calendarEvents);
+        return calendarEvents;
+    }
+
     toTitleCase = (str) => {
         return str.replace(
             /\w\S*/g,
@@ -116,14 +154,16 @@ export default class Task extends React.Component {
 
     render() {
         return (
-            <Card className={this.cardStyles.root}>
+            <Card style={{
+                width: "100%"
+            }}>
                 <CardHeader
                     avatar={
                         <Avatar alt="Remy Sharp"
                                 src={this.getUser(this.state.nextAssigment.assigned_user_uid).avatar_url}/>
                     }
                     action={
-                        <IconButton aria-label="settings">
+                        <IconButton aria-label="settings" onClick={this.handleModalOpen}>
                             <MoreVertIcon/>
                         </IconButton>
                     }
@@ -188,8 +228,10 @@ export default class Task extends React.Component {
                                                 <ListItemSecondaryAction>
                                                     {
                                                         assignment.status == "Completed" ?
-                                                            <EmojiEmotionsOutlinedIcon fontSize={"large"} style={{ color: green[500] }}/> :
-                                                            <SentimentVeryDissatisfiedOutlinedIcon fontSize={"large"} style={{ color: red[500] }}/>
+                                                            <EmojiEmotionsOutlinedIcon fontSize={"large"}
+                                                                                       style={{color: green[500]}}/> :
+                                                            <SentimentVeryDissatisfiedOutlinedIcon fontSize={"large"}
+                                                                                                   style={{color: red[500]}}/>
                                                     }
                                                 </ListItemSecondaryAction>
                                             </ListItem>
@@ -202,6 +244,41 @@ export default class Task extends React.Component {
                         </List>
                     </CardContent>
                 </Collapse>
+                <Modal
+                    aria-labelledby="transition-modal-title"
+                    aria-describedby="transition-modal-description"
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
+                    open={this.state.modalOpen}
+                    onClose={this.handleModalClose}
+                    closeAfterTransition
+                    BackdropComponent={Backdrop}
+                    BackdropProps={{
+                        timeout: 500,
+                    }}
+                >
+                    <Fade in={this.state.modalOpen}>
+                        <div
+                            style={{
+                                backgroundColor: "red !important",
+                                border: '2px solid #000',
+                                minHeight: '60%'
+                            }}>
+                            <Calendar
+                                startAccessor="startDate"
+                                endAccessor="endDate"
+                                style={{
+                                    height: 500,
+                                }}
+                                localizer={this.localizer}
+                                events={this.state.calendarEvents}
+                            />
+                        </div>
+                    </Fade>
+                </Modal>
             </Card>
         )
     }

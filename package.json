@@ -5,6 +5,7 @@
   "dependencies": {
     "@material-ui/core": "^4.11.0",
     "@material-ui/icons": "^4.9.1",
+    "@material-ui/pickers": "^3.2.10",
     "@react-firebase/auth": "^0.2.10",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
@@ -13,6 +14,7 @@
     "firebase": "^7.14.0",
     "moment": "^2.24.0",
     "react": "^16.13.1",
+    "react-big-calendar": "^0.27.0",
     "react-dom": "^16.13.1",
     "react-moment": "^0.9.7",
     "react-router": "^5.1.2",
