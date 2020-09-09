@@ -31,6 +31,19 @@ import Backdrop from "@material-ui/core/Backdrop";
 import Fade from "@material-ui/core/Fade";
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
+class EventComponent extends React.Component {
+    render() {
+        return <div style={{
+            whiteSpace: "normal"
+
+        }}>
+            {/*{this.props.event.title}*/}
+            <Avatar alt="Remy Sharp"
+                    src={this.props.event.title.avatarUrl}/>
+        </div>
+    }
+}
+
 export default class Task extends React.Component {
     constructor(props) {
         super(props);
@@ -124,7 +137,12 @@ export default class Task extends React.Component {
         pastAssignments.map((assignment) => {
             calendarEvents.push({
                 id: assignment.uid,
-                title: this.toTitleCase(this.getUser(assignment.assigned_user_uid).display_name),
+                // title: this.toTitleCase(this.getUser(assignment.assigned_user_uid).display_name),
+                // title: this.getUser(assignment.assigned_user_uid).avatar_url,
+                title: {
+                    avatarUrl: this.getUser(assignment.assigned_user_uid).avatar_url,
+                    statue: assignment.status
+                },
                 allDay: true,
                 startDate: new Date(assignment.date),
                 endDate: new Date(assignment.date),
@@ -132,8 +150,11 @@ export default class Task extends React.Component {
         })
         pendingAssignments.map((assignment) => {
             calendarEvents.push({
-                id: assignment.uid,
-                title: this.toTitleCase(this.getUser(assignment.assigned_user_uid).display_name),
+                id: assignment.id,
+                title: {
+                    avatarUrl: this.getUser(assignment.assigned_user_uid).avatar_url,
+                    statue: assignment.status
+                },
                 allDay: true,
                 startDate: new Date(assignment.date),
                 endDate: new Date(assignment.date),
@@ -272,8 +293,11 @@ export default class Task extends React.Component {
                                 startAccessor="startDate"
                                 endAccessor="endDate"
                                 style={{
-                                    minHeight: 500,
-                                    maxWidth: '100vw'
+                                    height: '100vh',
+                                    width: '100vw'
+                                }}
+                                components={{
+                                    event: EventComponent,
                                 }}
                                 localizer={this.localizer}
                                 events={this.state.calendarEvents}

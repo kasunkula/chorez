@@ -62,3 +62,7 @@
 .MuiBackdrop-root {
     background-color: white !important;
 }
+
+.rbc-event.rbc-event-allday {
+    background-color: inherit;
+}
